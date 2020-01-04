@@ -1,0 +1,2 @@
+rocketmq:
+  name-server: localhost:9876
