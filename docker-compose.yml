@@ -1,0 +1,65 @@
+version: '3.7'
+
+services:
+  name-server:
+    image: rocketmqinc/rocketmq:4.4.0
+    container_name: springboot-rocketmq-name-server
+    ports:
+      - "9876:9876"
+    command: sh mqnamesrv
+    networks:
+      - springboot-rocketmq-docker
+
+  broker-server:
+    image: rocketmqinc/rocketmq:4.4.0
+    container_name: springboot-rocketmq-broker-server
+    ports:
+      - "10909:10909"
+      - "10911:10911"
+      - "10912:10912"
+    #    environment:
+    #      MAX_POSSIBLE_HEAP: 512m
+    command: sh mqbroker -n name-server:9876
+    networks:
+      - springboot-rocketmq-docker
+    depends_on:
+      - name-server
+
+  console-server:
+    image: styletang/rocketmq-console-ng:1.0.0
+    container_name: springboot-rocketmq-console-server
+    ports:
+      - "9090:8080"
+    environment:
+      JAVA_OPTS: "-Drocketmq.namesrv.addr=name-server:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
+    networks:
+      - springboot-rocketmq-docker
+    depends_on:
+      - broker-server
+
+  producer:
+    build:
+      context: ./mq-producer
+    image: springboot-rocketmq-producer
+    container_name: springboot-rocketmq-producer
+    ports:
+      - "8080:8080"
+    networks:
+      - springboot-rocketmq-docker
+    depends_on:
+      - broker-server
+
+  consumer:
+    build:
+      context: ./mq-consumer
+    image: springboot-rocketmq-consumer
+    container_name: springboot-rocketmq-consumer
+    networks:
+      - springboot-rocketmq-docker
+    depends_on:
+      - producer
+
+networks:
+  springboot-rocketmq-docker:
+    name: springboot-rocketmq-docker
+    driver: bridge
