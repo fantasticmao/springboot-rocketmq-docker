@@ -25,17 +25,17 @@ services:
     depends_on:
       - name-server
 
-  console-server:
-    image: styletang/rocketmq-console-ng:1.0.0
-    container_name: springboot-rocketmq-console-server
-    ports:
-      - "9090:8080"
-    environment:
-      JAVA_OPTS: "-Drocketmq.namesrv.addr=name-server:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
-    networks:
-      - springboot-rocketmq-docker
-    depends_on:
-      - broker-server
+#  console-server:
+#    image: styletang/rocketmq-console-ng:1.0.0
+#    container_name: springboot-rocketmq-console-server
+#    ports:
+#      - "9090:8080"
+#    environment:
+#      JAVA_OPTS: "-Drocketmq.namesrv.addr=name-server:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false"
+#    networks:
+#      - springboot-rocketmq-docker
+#    depends_on:
+#      - broker-server
 
   producer:
     build:
