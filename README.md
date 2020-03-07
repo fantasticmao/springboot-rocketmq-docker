@@ -27,8 +27,6 @@ SpringBoot-RocketMQ-Docker 的业务场景比较简单：**MQ Producer 作为 RE
 <details>
 <summary>创建工程</summary>
 
-定义 springboot-rocketmq-docker 项目中所需要的依赖。
-
 1. 创建工程目录：
 
    ```shell
@@ -36,7 +34,7 @@ SpringBoot-RocketMQ-Docker 的业务场景比较简单：**MQ Producer 作为 RE
      $ cd springboot-rocketmq-docker
    ```
 
-2. 在工程根目录下，创建一个 `pom.xml` 文件，并粘贴以下内容:
+2. 在工程根目录下，创建一个 `pom.xml` 文件，并粘贴以下内容：
 
    ```xml
    <?xml version="1.0" encoding="UTF-8"?>
@@ -85,10 +83,164 @@ SpringBoot-RocketMQ-Docker 的业务场景比较简单：**MQ Producer 作为 RE
 
 <details>
 <summary>创建模块 mq-producer</summary>
+
+1. 创建模块目录：
+
+   ```shell
+    $ mkdir mq-producer
+    $ cd mq-producer
+   ```
+
+2. 在模块根目录下，创建一个 `pom.xml` 文件，并粘贴以下内容：
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <project xmlns="http://maven.apache.org/POM/4.0.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/POM/4.0.0  http://maven.apache.org/xsd/maven-4.0.0.xsd">
+       <parent>
+           <artifactId>springboot-rocketmq-docker</artifactId>
+           <groupId>cn.fantasticmao.demo</groupId>
+           <version>1.0-SNAPSHOT</version>
+       </parent>
+       <modelVersion>4.0.0</modelVersion>
+
+       <artifactId>mq-producer</artifactId>
+       <packaging>jar</packaging>
+
+       <dependencies>
+           <dependency>
+               <groupId>org.springframework.boot</groupId>
+               <artifactId>spring-boot-starter-web</artifactId>
+           </dependency>
+
+           <dependency>
+               <groupId>org.apache.rocketmq</groupId>
+               <artifactId>rocketmq-spring-boot-starter</artifactId>
+           </dependency>
+       </dependencies>
+   </project>
+   ```
+
+3. 在模块目录下，创建 `src/main/java/cn/fantasticmao/demo/Producer.java` 文件，并粘贴以下内容：
+
+   ```java
+   package cn.fantasticmao.demo;
+
+   import org.apache.rocketmq.client.producer.SendResult;
+   import org.apache.rocketmq.spring.core.RocketMQTemplate;
+   import org.springframework.boot.SpringApplication;
+   import org.springframework.boot.autoconfigure.SpringBootApplication;
+   import org.springframework.web.bind.annotation.GetMapping;
+   import org.springframework.web.bind.annotation.PathVariable;
+   import org.springframework.web.bind.annotation.RestController;
+
+   import javax.annotation.Resource;
+   import java.nio.charset.StandardCharsets;
+
+   @RestController
+   @SpringBootApplication
+   public class Producer {
+       @Resource
+       private RocketMQTemplate rocketMQTemplate;
+
+       @GetMapping("/say/{msg}")
+       public String say(@PathVariable String msg) {
+           final byte[] payload = msg.getBytes(StandardCharsets.UTF_8);
+           final SendResult sendResult = rocketMQTemplate.syncSend ("springboot-rocketmq-docker", payload);
+           return "Send MsgId: " + sendResult.getMsgId();
+       }
+
+       public static void main(String[] args) {
+           SpringApplication.run(Producer.class, args);
+       }
+   }
+   ```
+
+4. 在模块目录下，创建 `src/main/resources/application.yml` 文件，并粘贴以下内容：
+
+   ```yml
+   rocketmq:
+     name-server: name-server:9876
+     producer:
+       group: producer
+   ```
+
 </details>
 
 <details>
 <summary>创建模块 mq-consumer</summary>
+
+1. 创建模块目录：
+
+   ```shell
+    $ mkdir mq-consumer
+    $ cd mq-consumer
+   ```
+
+2. 在模块根目录下，创建一个 `pom.xml` 文件，并粘贴以下内容：
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <project xmlns="http://maven.apache.org/POM/4.0.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+       <parent>
+           <artifactId>springboot-rocketmq-docker</artifactId>
+           <groupId>cn.fantasticmao.demo</groupId>
+           <version>1.0-SNAPSHOT</version>
+       </parent>
+       <modelVersion>4.0.0</modelVersion>
+
+       <artifactId>mq-consumer</artifactId>
+       <packaging>jar</packaging>
+
+       <dependencies>
+           <dependency>
+               <groupId>org.apache.rocketmq</groupId>
+               <artifactId>rocketmq-spring-boot-starter</artifactId>
+           </dependency>
+       </dependencies>
+   </project>
+   ```
+
+3. 在模块目录下，创建 `src/main/java/cn/fantasticmao/demo/Consumer.java` 文件，并粘贴以下内容：
+
+   ```java
+   package cn.fantasticmao.demo;
+
+   import org.apache.rocketmq.common.message.MessageExt;
+   import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
+   import org.apache.rocketmq.spring.core.RocketMQListener;
+   import org.springframework.boot.SpringApplication;
+   import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+   import java.nio.charset.StandardCharsets;
+
+   @RocketMQMessageListener(consumerGroup = "consumer", topic = "springboot-rocketmq-docker")
+   @SpringBootApplication
+   public class Consumer implements RocketMQListener<MessageExt> {
+
+       @Override
+       public void onMessage(MessageExt message) {
+           final String msgId = message.getMsgId();
+           final String msgBody = new String(message.getBody(), StandardCharsets.UTF_8);
+           System.out.printf("Receive MsgId: %s MsgBody: %s%n", msgId, msgBody);
+       }
+
+       public static void main(String[] args) {
+           SpringApplication.run(Consumer.class, args);
+       }
+   }
+   ```
+
+4. 在模块目录下，创建 `src/main/resources/application.yml` 文件，并粘贴以下内容：
+
+   ```yml
+   rocketmq:
+     name-server: name-server:9876
+   ```
+
 </details>
 
 ## 编写 Dockerfile
