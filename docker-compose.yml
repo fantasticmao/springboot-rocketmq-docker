@@ -1,9 +1,14 @@
 version: '3.7'
 
+networks:
+  springboot-rocketmq-docker:
+    name: springboot-rocketmq-docker
+    driver: bridge
+
 services:
   name-server:
     image: rocketmqinc/rocketmq:4.4.0
-    container_name: springboot-rocketmq-name-server
+    container_name: rocketmq-name-server
     ports:
       - "9876:9876"
     command: sh mqnamesrv
@@ -12,7 +17,7 @@ services:
 
   broker-server:
     image: rocketmqinc/rocketmq:4.4.0
-    container_name: springboot-rocketmq-broker-server
+    container_name: rocketmq-broker-server
     ports:
       - "10909:10909"
       - "10911:10911"
@@ -27,7 +32,7 @@ services:
 
 #  console-server:
 #    image: styletang/rocketmq-console-ng:1.0.0
-#    container_name: springboot-rocketmq-console-server
+#    container_name: rocketmq-console-server
 #    ports:
 #      - "9090:8080"
 #    environment:
@@ -41,7 +46,7 @@ services:
     build:
       context: ./mq-producer
     image: springboot-rocketmq-producer
-    container_name: springboot-rocketmq-producer
+    container_name: springboot-mq-producer
     ports:
       - "8080:8080"
     networks:
@@ -53,13 +58,8 @@ services:
     build:
       context: ./mq-consumer
     image: springboot-rocketmq-consumer
-    container_name: springboot-rocketmq-consumer
+    container_name: springboot-mq-consumer
     networks:
       - springboot-rocketmq-docker
     depends_on:
       - producer
-
-networks:
-  springboot-rocketmq-docker:
-    name: springboot-rocketmq-docker
-    driver: bridge
