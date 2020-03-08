@@ -12,7 +12,6 @@ import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 
 @RestController
-@SpringBootApplication
 public class Producer {
     @Resource
     private RocketMQTemplate rocketMQTemplate;
@@ -21,10 +20,14 @@ public class Producer {
     public String say(@PathVariable String msg) {
         final byte[] payload = msg.getBytes(StandardCharsets.UTF_8);
         final SendResult sendResult = rocketMQTemplate.syncSend("springboot-rocketmq-docker", payload);
-        return "Send MsgId: " + sendResult.getMsgId();
+        return String.format("Send MsgId: %s%n", sendResult.getMsgId());
     }
 
-    public static void main(String[] args) {
-        SpringApplication.run(Producer.class, args);
+    @SpringBootApplication
+    public static class Application {
+
+        public static void main(String[] args) {
+            SpringApplication.run(Application.class, args);
+        }
     }
 }

@@ -72,7 +72,7 @@ SpringBoot-RocketMQ-Docker 的业务场景比较简单：**MQ Producer 作为 RE
                <dependency>
                    <groupId>org.apache.rocketmq</groupId>
                    <artifactId>rocketmq-spring-boot-starter</artifactId>
-                   <version>2.0.4</version>
+                   <version>2.1.0</version>
                </dependency>
            </dependencies>
         </dependencyManagement>
@@ -84,7 +84,7 @@ SpringBoot-RocketMQ-Docker 的业务场景比较简单：**MQ Producer 作为 RE
 <details>
 <summary>创建模块 mq-producer</summary>
 
-1. 创建模块目录：
+1. 在工程根目录下，创建模块 mq-producer 目录：
 
    ```shell
     $ mkdir mq-producer
@@ -139,7 +139,6 @@ SpringBoot-RocketMQ-Docker 的业务场景比较简单：**MQ Producer 作为 RE
    import java.nio.charset.StandardCharsets;
 
    @RestController
-   @SpringBootApplication
    public class Producer {
        @Resource
        private RocketMQTemplate rocketMQTemplate;
@@ -148,11 +147,15 @@ SpringBoot-RocketMQ-Docker 的业务场景比较简单：**MQ Producer 作为 RE
        public String say(@PathVariable String msg) {
            final byte[] payload = msg.getBytes(StandardCharsets.UTF_8);
            final SendResult sendResult = rocketMQTemplate.syncSend ("springboot-rocketmq-docker", payload);
-           return "Send MsgId: " + sendResult.getMsgId();
+           return String.format("Send MsgId: %s%n", sendResult.getMsgId());
        }
 
-       public static void main(String[] args) {
-           SpringApplication.run(Producer.class, args);
+       @SpringBootApplication
+       public static class Application {
+
+           public static void main(String[] args) {
+               SpringApplication.run(Application.class, args);
+           }
        }
    }
    ```
@@ -171,7 +174,7 @@ SpringBoot-RocketMQ-Docker 的业务场景比较简单：**MQ Producer 作为 RE
 <details>
 <summary>创建模块 mq-consumer</summary>
 
-1. 创建模块目录：
+1. 在工程根目录下，创建模块 mq-consumer 目录：
 
    ```shell
     $ mkdir mq-consumer
@@ -214,11 +217,12 @@ SpringBoot-RocketMQ-Docker 的业务场景比较简单：**MQ Producer 作为 RE
    import org.apache.rocketmq.spring.core.RocketMQListener;
    import org.springframework.boot.SpringApplication;
    import org.springframework.boot.autoconfigure.SpringBootApplication;
+   import org.springframework.stereotype.Service;
 
    import java.nio.charset.StandardCharsets;
 
-   @RocketMQMessageListener(consumerGroup = "consumer", topic = "springboot-rocketmq-docker")
-   @SpringBootApplication
+   @Service
+   @RocketMQMessageListener(consumerGroup = "consumer", topic =    "springboot-rocketmq-docker")
    public class Consumer implements RocketMQListener<MessageExt> {
 
        @Override
@@ -228,8 +232,12 @@ SpringBoot-RocketMQ-Docker 的业务场景比较简单：**MQ Producer 作为 RE
            System.out.printf("Receive MsgId: %s MsgBody: %s%n", msgId, msgBody);
        }
 
-       public static void main(String[] args) {
-           SpringApplication.run(Consumer.class, args);
+       @SpringBootApplication
+       public static class Application {
+
+           public static void main(String[] args) {
+               SpringApplication.run(Consumer.class, args);
+           }
        }
    }
    ```
@@ -246,44 +254,71 @@ SpringBoot-RocketMQ-Docker 的业务场景比较简单：**MQ Producer 作为 RE
 ## 编写 Dockerfile
 
 <details>
-<summary>mq-producer/Dockerfile</summary>
+<summary>创建 mq-producer/Dockerfile</summary>
+
+在模块 mq-producer 根目录下，创建 `Dockerfile` 文件，并粘贴以下内容：
+
+```dockerfile
+FROM openjdk:8-jdk-alpine
+ARG JAR_FILE=target/*.jar
+WORKDIR /opt/app/
+COPY ./${JAR_FILE} producer.jar
+EXPOSE 8080
+CMD java -jar producer.jar
+```
+
 </details>
 
 <details>
-<summary>mq-consumer/Dockerfile</summary>
+<summary>创建 mq-consumer/Dockerfile</summary>
+
+在模块 mq-consumer 根目录下，创建 `Dockerfile` 文件，并粘贴以下内容：
+
+```dockerfile
+FROM openjdk:8-jdk-alpine
+ARG JAR_FILE=target/*.jar
+WORKDIR /opt/app/
+COPY ./${JAR_FILE} consumer.jar
+CMD java -jar consumer.jar
+```
+
 </details>
 
 ## 编写 docker-compose.yml
 
 <details>
-<summary>network: springboot-rocketmq-docker</summary>
+<summary>创建 docker-compose.yml</summary>
 </details>
 
 <details>
-<summary>service: rocketmq-name-server</summary>
+<summary>定义 network: springboot-rocketmq-docker</summary>
 </details>
 
 <details>
-<summary>service: rocketmq-broker-server</summary>
+<summary>定义 service: rocketmq-name-server</summary>
 </details>
 
 <details>
-<summary>service: springboot-mq-producer</summary>
+<summary>定义 service: rocketmq-broker-server</summary>
 </details>
 
 <details>
-<summary>service: springboot-mq-consumer</summary>
+<summary>定义 service: springboot-mq-producer</summary>
 </details>
 
-## 构建和运行应用
+<details>
+<summary>定义 service: springboot-mq-consumer</summary>
+</details>
+
+## 打包项目，构建和运行应用
 
 <details>
 <summary>使用 Maven 打包项目</summary>
 
-在工程根目录下，运行以下 Maven 命令：
+在工程根目录下，运行以下 Maven 命令，用于打包 mq-producer 和 mq-consumer 两个模块：
 
 ```shell
-mvn clean package
+$ mvn clean package
 ```
 
 </details>
@@ -291,10 +326,18 @@ mvn clean package
 <details>
 <summary>使用 Docker Compose 构建和运行应用</summary>
 
-在工程根目录下，运行以下 Docker Compose 命令：
+在工程根目录下，运行以下 Docker Compose 命令，用于启动应用：
 
 ```shell
-docker-compose up
+$ docker-compose up
+```
+
+也可以运行以下 Docker Compose 命令，用于以后台运行的方式启动应用，以及列出正在运行的 Docker Service：
+
+```shell
+$ docker-compose up -d
+$
+$ docker-compose ps
 ```
 
 </details>

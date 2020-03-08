@@ -5,11 +5,12 @@ import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 
+@Service
 @RocketMQMessageListener(consumerGroup = "consumer", topic = "springboot-rocketmq-docker")
-@SpringBootApplication
 public class Consumer implements RocketMQListener<MessageExt> {
 
     @Override
@@ -19,7 +20,11 @@ public class Consumer implements RocketMQListener<MessageExt> {
         System.out.printf("Receive MsgId: %s MsgBody: %s%n", msgId, msgBody);
     }
 
-    public static void main(String[] args) {
-        SpringApplication.run(Consumer.class, args);
+    @SpringBootApplication
+    public static class Application {
+
+        public static void main(String[] args) {
+            SpringApplication.run(Consumer.class, args);
+        }
     }
 }
