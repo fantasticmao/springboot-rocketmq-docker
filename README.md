@@ -340,7 +340,6 @@ Creating rocketmq-name-server ... done
 Creating rocketmq-broker-server ... done
 Creating springboot-mq-producer ... done
 Creating springboot-mq-consumer ... done
-$
 $ docker-compose ps
          Name                       Command               State                                           Ports
 --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -348,10 +347,16 @@ rocketmq-broker-server   sh mqbroker -n name-server ...   Up      0.0.0.0:10909-
 rocketmq-name-server     sh mqnamesrv                     Up      10909/tcp, 10911/tcp, 0.0.0.0:9876->9876/tcp
 springboot-mq-consumer   /bin/sh -c java -jar consu ...   Up
 springboot-mq-producer   /bin/sh -c java -jar produ ...   Up      0.0.0.0:8080->8080/tcp
-maomao@01:23:12 springboot-rocketmq-docker
-$
 ```
 
 </details>
 
 ## 预览效果
+
+1. 通过 HTTP 协议，向作为 REST Server 的 MQ Producer 发送消息
+
+   ![image](doc/1.png)
+
+2. 消息经由 RocketMQ 发送给 MQ Consumer，并打印至控制台
+
+   ![image](doc/2.png)
