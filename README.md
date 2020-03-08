@@ -353,10 +353,10 @@ springboot-mq-producer   /bin/sh -c java -jar produ ...   Up      0.0.0.0:8080->
 
 ## 预览效果
 
-1. 通过 HTTP 协议，向作为 REST Server 的 MQ Producer 发送消息
+1. 通过 HTTP 协议，向作为 REST Server 的 MQ Producer 发送消息：
 
    ![image](doc/1.png)
 
-2. 消息经由 RocketMQ 发送给 MQ Consumer，并打印至控制台
+2. 消息经由 RocketMQ 发送给 MQ Consumer 消费，并打印至控制台：
 
    ![image](doc/2.png)
