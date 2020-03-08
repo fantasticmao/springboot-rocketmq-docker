@@ -24,7 +24,7 @@ public class Consumer implements RocketMQListener<MessageExt> {
     public static class Application {
 
         public static void main(String[] args) {
-            SpringApplication.run(Consumer.class, args);
+            SpringApplication.run(Application.class, args);
         }
     }
 }

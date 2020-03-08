@@ -332,12 +332,24 @@ $ mvn clean package
 $ docker-compose up
 ```
 
-也可以运行以下 Docker Compose 命令，用于以后台运行的方式启动应用，以及列出正在运行的 Docker Service：
+也可以通过运行以下 Docker Compose 命令，用于以后台运行的方式启动应用，和列出正在运行的 Docker Service：
 
 ```shell
 $ docker-compose up -d
+Creating rocketmq-name-server ... done
+Creating rocketmq-broker-server ... done
+Creating springboot-mq-producer ... done
+Creating springboot-mq-consumer ... done
 $
 $ docker-compose ps
+         Name                       Command               State                                           Ports
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+rocketmq-broker-server   sh mqbroker -n name-server ...   Up      0.0.0.0:10909->10909/tcp, 0.0.0.0:10911->10911/tcp, 0.0.0.0:10912->10912/tcp, 9876/tcp
+rocketmq-name-server     sh mqnamesrv                     Up      10909/tcp, 10911/tcp, 0.0.0.0:9876->9876/tcp
+springboot-mq-consumer   /bin/sh -c java -jar consu ...   Up
+springboot-mq-producer   /bin/sh -c java -jar produ ...   Up      0.0.0.0:8080->8080/tcp
+maomao@01:23:12 springboot-rocketmq-docker
+$
 ```
 
 </details>
