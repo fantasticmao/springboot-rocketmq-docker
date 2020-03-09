@@ -288,26 +288,111 @@ CMD java -jar consumer.jar
 
 <details>
 <summary>创建 docker-compose.yml</summary>
+
+在工程根目录下，创建 `docker-compose.yml` 文件，并指定 Compose 文件格式的版本：
+
+```yml
+version: "3.7"
+```
+
 </details>
 
 <details>
 <summary>定义 network: springboot-rocketmq-docker</summary>
+
+在工程根目录的 `docker-compose.yml` 文件中，显式定义一个 network，用于连接后续定义的各个 Service：
+
+```yml
+networks:
+  springboot-rocketmq-docker:
+    name: springboot-rocketmq-docker
+    driver: bridge
+```
+
 </details>
 
 <details>
 <summary>定义 service: rocketmq-name-server</summary>
+
+在工程根目录的 `docker-compose.yml` 文件中，定义 RocketMQ NameServer 的 Service:
+
+```yml
+services:
+  name-server:
+    image: rocketmqinc/rocketmq:4.4.0
+    container_name: rocketmq-name-server
+    ports:
+      - "9876:9876"
+    command: sh mqnamesrv
+    networks:
+      - springboot-rocketmq-docker
+```
+
 </details>
 
 <details>
 <summary>定义 service: rocketmq-broker-server</summary>
+
+在工程根目录的 `docker-compose.yml` 文件中，定义 RocketMQ BrokerServer 的 Service:
+
+```yml
+services:
+  broker-server:
+    image: rocketmqinc/rocketmq:4.4.0
+    container_name: rocketmq-broker-server
+    ports:
+      - "10909:10909"
+      - "10911:10911"
+      - "10912:10912"
+    command: sh mqbroker -n name-server:9876
+    networks:
+      - springboot-rocketmq-docker
+    depends_on:
+      - name-server
+```
+
 </details>
 
 <details>
 <summary>定义 service: springboot-mq-producer</summary>
+
+在工程根目录的 `docker-compose.yml` 文件中，定义 mq-produce 模块的 Service:
+
+```yml
+services:
+  producer:
+    build:
+      context: ./mq-producer
+    image: springboot-rocketmq-producer
+    container_name: springboot-mq-producer
+    ports:
+      - "8080:8080"
+    networks:
+      - springboot-rocketmq-docker
+    depends_on:
+      - broker-server
+```
+
 </details>
 
 <details>
 <summary>定义 service: springboot-mq-consumer</summary>
+
+在工程根目录的 `docker-compose.yml` 文件中，定义 mq-consumer 模块的 Service:
+
+```yml
+services:
+  consumer:
+    build:
+      context: ./mq-consumer
+    image: springboot-rocketmq-consumer
+    container_name: springboot-mq-consumer
+    networks:
+      - springboot-rocketmq-docker
+    depends_on:
+      - producer
+```
+
 </details>
 
 ## 打包项目，构建和运行应用
