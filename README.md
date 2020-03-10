@@ -97,7 +97,7 @@ SpringBoot-RocketMQ-Docker 的业务场景比较简单：**MQ Producer 作为 RE
    <?xml version="1.0" encoding="UTF-8"?>
    <project xmlns="http://maven.apache.org/POM/4.0.0"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://maven.apache.org/POM/4.0.0  http://maven.apache.org/xsd/maven-4.0.0.xsd">
+            xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
        <parent>
            <artifactId>springboot-rocketmq-docker</artifactId>
            <groupId>cn.fantasticmao.demo</groupId>
@@ -222,7 +222,7 @@ SpringBoot-RocketMQ-Docker 的业务场景比较简单：**MQ Producer 作为 RE
    import java.nio.charset.StandardCharsets;
 
    @Service
-   @RocketMQMessageListener(consumerGroup = "consumer", topic =    "springboot-rocketmq-docker")
+   @RocketMQMessageListener(consumerGroup = "consumer", topic = "springboot-rocketmq-docker")
    public class Consumer implements RocketMQListener<MessageExt> {
 
        @Override
