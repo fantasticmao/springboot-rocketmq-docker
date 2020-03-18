@@ -10,9 +10,9 @@ SpringBoot-RocketMQ-Docker 的业务场景比较简单：**MQ Producer 作为 RE
                    |             | --------> | RocketMQ     | <-------- |             |
                    |             | discovery | NameServer   | discovery |             |
                    |             |           +--------------+           |             |
-         send msg  | MQ Producer |                ^    ^                | MQ Consumer |
+         send msg  | MQ Producer |                A    A                | MQ Consumer |
     HTTP --------> |     &&      |   routing info |    |                | (print msg) |
-                   | REST Server |                v    v                |             |
+                   | REST Server |                V    V                |             |
                    |             |           +--------------+           |             |
                    |             | send msg  | RocketMQ     | send msg  |             |
                    |             | --------> | BrokerServer | --------> |             |
